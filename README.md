@@ -1,4 +1,4 @@
-# PitchCraftAI (AI Agent which can automate our entire cold outreaching.)
+# ReachCraft AI (AI Agent which can automate our entire cold outreaching.)
 
 # 🤖 AI-Powered Cold Outreach Agent — n8n + Ollama
 
