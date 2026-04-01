@@ -1,0 +1,1071 @@
+{
+  "name": "ReachCraftAI",
+  "nodes": [
+    {
+      "parameters": {
+        "formTitle": "Candidate Details",
+        "formFields": {
+          "values": [
+            {
+              "fieldLabel": "Candidate's Name",
+              "placeholder": "Enter Your Name",
+              "requiredField": true
+            },
+            {
+              "fieldLabel": "Email",
+              "placeholder": "Enter Your Email",
+              "requiredField": true
+            },
+            {
+              "fieldLabel": "Mobile Number",
+              "fieldType": "number",
+              "placeholder": "Enter your Mobile Number",
+              "requiredField": true
+            },
+            {
+              "fieldLabel": "LInkedIn URL",
+              "placeholder": "Enter Your LinkedIn URL",
+              "requiredField": true
+            },
+            {
+              "fieldLabel": "Job Title of Interest",
+              "placeholder": "Enter Job Title of your Interest",
+              "requiredField": true
+            },
+            {
+              "fieldLabel": "CV",
+              "placeholder": "Upload Google Drive Link of your CV ",
+              "requiredField": true
+            },
+            {
+              "fieldLabel": "Additional Information",
+              "placeholder": "Tell us more about yourself"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.formTrigger",
+      "typeVersion": 2.3,
+      "position": [
+        -176,
+        880
+      ],
+      "id": "df1b9704-ca33-4b45-8d08-fc786cd1d6c6",
+      "name": "On form submission",
+      "webhookId": "2c7b8439-6def-4706-a8e1-ed82895a1aa1"
+    },
+    {
+      "parameters": {
+        "sheetId": "1OeQReV8XnfcqYxoAhyxXWkCzJGTRVIfLChJsBwAnOYs",
+        "range": "A1:G",
+        "options": {}
+      },
+      "id": "0ed0771a-e336-431f-ac41-adcf802c01fb",
+      "name": "Google Sheets",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 2,
+      "position": [
+        -80,
+        0
+      ],
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "0F6HDtCgDo6SqF9f",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "batchSize": 1,
+        "options": {
+          "reset": false
+        }
+      },
+      "id": "d8ddcee8-fdb0-4e40-bd2e-bf11115067d1",
+      "name": "SplitInBatches",
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 1,
+      "position": [
+        400,
+        0
+      ]
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        1248,
+        896
+      ],
+      "id": "7e600717-ca9f-42b7-b3c1-f9b2fe4ab09d",
+      "name": "Wait",
+      "webhookId": "3ca725c3-f3b7-443d-a58e-129118b98d35"
+    },
+    {
+      "parameters": {
+        "sendTo": "={{ $('Google Sheets').item.json.Email }}",
+        "subject": "=Application for {{ $('On form submission').item.json['Job Title of Interest'] }} Job Role.",
+        "emailType": "text",
+        "message": "={{ $('AI Agent').item.json.output }}",
+        "options": {
+          "appendAttribution": false,
+          "senderName": "={{ $('On form submission').item.json['Candidate\\'s Name'] }}"
+        }
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        1472,
+        896
+      ],
+      "id": "cf7e4792-b347-4b26-8d3d-4b81fc6e5bfe",
+      "name": "Send a message",
+      "webhookId": "5f485e3b-ca07-4a82-9e3b-c4a79ca4cc8c",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "sEjj6WUUjUtTDDmA",
+          "name": "Google Auth"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "content": "## HRs List\nThis node contains the premium list of HRs, their Email, Job Title and company Name.",
+        "height": 384,
+        "width": 256,
+        "color": 5
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -144,
+        -160
+      ],
+      "typeVersion": 1,
+      "id": "eb4a75d1-4227-402a-bfdd-a8b114a9747a",
+      "name": "Sticky Note"
+    },
+    {
+      "parameters": {
+        "content": "## Form for candidate\nThis form will retrieve all the information of the candidates.\ne.g. Their Name, Job Title (they are looking for) and their CV.",
+        "height": 368,
+        "width": 256,
+        "color": 5
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -240,
+        720
+      ],
+      "typeVersion": 1,
+      "id": "1169648c-8591-4236-9def-0ab2136f7973",
+      "name": "Sticky Note1"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=",
+        "options": {
+          "systemMessage": "=You are a business research assistant.\n\nI have given you a company name: {{ $json.Company }}\n\nUse the search tool to search for this company and find:\n1. Company Description (2-3 lines, clear and professional)\n2. Industry (single category, e.g. \"Electric Vehicles\", \n   \"Software & Technology\", \"E-Commerce\", etc.)\n\nAfter searching, return ONLY in this exact JSON format:\n{\n  \"description\": \"...\",\n  \"industry\": \"...\"\n}\n\nDo not include any explanation, markdown, or backticks."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        688,
+        0
+      ],
+      "id": "6548af9e-effd-4c27-884c-d66fc5e6f4b3",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "content": "## Finding Description And Industry of the Company\nUsing Serper API we can do web search and can find the Company's description and industry.",
+        "height": 544,
+        "width": 480,
+        "color": 5
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        592,
+        -176
+      ],
+      "typeVersion": 1,
+      "id": "0e4b029c-fab1-418a-98c4-5ea1dfb61029",
+      "name": "Sticky Note2"
+    },
+    {
+      "parameters": {
+        "model": "llama3.1:8b",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOllama",
+      "typeVersion": 1,
+      "position": [
+        640,
+        192
+      ],
+      "id": "402b7fc5-aaf3-4cfa-80bf-15e1956247a7",
+      "name": "Ollama Chat Model",
+      "credentials": {
+        "ollamaApi": {
+          "id": "uaBUWUPLsZBX7fqh",
+          "name": "Ollama account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "chat_memory_default",
+        "contextWindowLength": 10
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.3,
+      "position": [
+        784,
+        192
+      ],
+      "id": "933887e6-d820-4127-b962-42cdd34dbbec",
+      "name": "Simple Memory"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://google.serper.dev/search",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "X-API-KEY",
+              "value": "a5b21e0ddd4c81da954fbf047ae19dcc15861ea7"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"q\": \"{{ $json.Company }} company description and industry\",\n  \"num\": 5\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequestTool",
+      "typeVersion": 4.4,
+      "position": [
+        928,
+        192
+      ],
+      "id": "160c13db-555c-44b4-843d-5b5a9fba6f2b",
+      "name": "HTTP Request1"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        -384,
+        0
+      ],
+      "id": "19353848-60d5-4405-a205-645d26f8f9df",
+      "name": "When clicking ‘Execute workflow’"
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "documentId": {
+          "__rl": true,
+          "value": "1OeQReV8XnfcqYxoAhyxXWkCzJGTRVIfLChJsBwAnOYs",
+          "mode": "list",
+          "cachedResultName": "Recruiters",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1OeQReV8XnfcqYxoAhyxXWkCzJGTRVIfLChJsBwAnOYs/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1OeQReV8XnfcqYxoAhyxXWkCzJGTRVIfLChJsBwAnOYs/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Description": "={{ $json.description }}",
+            "Industry": "={{ $json.industry }}",
+            "Name": "={{ $('SplitInBatches').item.json.Name }}"
+          },
+          "matchingColumns": [
+            "Name"
+          ],
+          "schema": [
+            {
+              "id": "Name",
+              "displayName": "Name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Email",
+              "displayName": "Email",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Title",
+              "displayName": "Title",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Company",
+              "displayName": "Company",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Description",
+              "displayName": "Description",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Industry",
+              "displayName": "Industry",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "row_number",
+              "displayName": "row_number",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "readOnly": true,
+              "removed": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        1408,
+        0
+      ],
+      "id": "f7ec65d4-dac8-4ce6-949b-bc45af38e7ab",
+      "name": "Update row in sheet",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "0F6HDtCgDo6SqF9f",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "content": "## Workflow 2 - (Research Workflow) Adding Descriptions And the Industries in our Premium List of HRs",
+        "height": 752,
+        "width": 2224,
+        "color": 6
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -464,
+        -320
+      ],
+      "typeVersion": 1,
+      "id": "04421508-2927-4d71-900e-60276146005e",
+      "name": "Sticky Note3"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Get the AI Agent output text\nconst output = $json.output;\n\n// Parse the JSON from the text\nconst parsed = JSON.parse(output);\n\nreturn [{\n  json: {\n    description: parsed.description,\n    industry: parsed.industry\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1152,
+        0
+      ],
+      "id": "e350d673-1591-4b05-acba-d6778557f286",
+      "name": "Code in JavaScript"
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1OeQReV8XnfcqYxoAhyxXWkCzJGTRVIfLChJsBwAnOYs",
+          "mode": "list",
+          "cachedResultName": "Recruiters",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1OeQReV8XnfcqYxoAhyxXWkCzJGTRVIfLChJsBwAnOYs/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1OeQReV8XnfcqYxoAhyxXWkCzJGTRVIfLChJsBwAnOYs/edit#gid=0"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        112,
+        880
+      ],
+      "id": "322c7873-0e77-4d30-854c-592f24ee5386",
+      "name": "Get row(s) in sheet",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "0F6HDtCgDo6SqF9f",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        352,
+        880
+      ],
+      "id": "a739f4a9-2285-43e1-8025-f637686f33b9",
+      "name": "Loop Over Items"
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "llama3.1:8b",
+          "mode": "list",
+          "cachedResultName": "llama3.1:8b"
+        },
+        "messages": {
+          "values": [
+            {}
+          ]
+        },
+        "options": {
+          "system": ""
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.ollama",
+      "typeVersion": 1,
+      "position": [
+        592,
+        896
+      ],
+      "id": "abb3d21f-a019-44a8-9114-54cd2f0518b1",
+      "name": "Message a model",
+      "credentials": {
+        "ollamaApi": {
+          "id": "uaBUWUPLsZBX7fqh",
+          "name": "Ollama account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "content": "## Workflow 3 -Sending personalized Emails to the HRs",
+        "height": 704,
+        "width": 2224,
+        "color": 6
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -464,
+        544
+      ],
+      "typeVersion": 1,
+      "id": "44ba91e6-8a6e-47c6-8472-09322decaef6",
+      "name": "Sticky Note4"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Loop over input items and add a new field called 'myNewField' to the JSON of each one\nfor (const item of $input.all()) {\n  item.json.myNewField = 1;\n}\n\nreturn $input.all();"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1008,
+        896
+      ],
+      "id": "b3203697-5ca2-49ea-9550-e52b31274460",
+      "name": "Code in JavaScript1"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "20a31278-8693-44d3-aaf8-bb524f1a506d",
+              "leftValue": "={{ $json.Description }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "empty",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.filter",
+      "typeVersion": 2.3,
+      "position": [
+        176,
+        0
+      ],
+      "id": "6224070c-b3e8-4cca-a613-62ab63791174",
+      "name": "Filter"
+    },
+    {
+      "parameters": {
+        "content": "## Workflow 1 - Validate Emails with Disify\n",
+        "height": 512,
+        "width": 2224,
+        "color": 6
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -464,
+        -1024
+      ],
+      "typeVersion": 1,
+      "id": "5b2204f6-1d7b-45ef-abb8-9e704f0437f1",
+      "name": "Sticky Note6"
+    },
+    {
+      "parameters": {
+        "sheetId": "1OeQReV8XnfcqYxoAhyxXWkCzJGTRVIfLChJsBwAnOYs",
+        "range": "A1:E",
+        "options": {}
+      },
+      "id": "471b1819-383d-4bf8-a782-fc621825e0a5",
+      "name": "Google Sheets1",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 2,
+      "position": [
+        0,
+        -816
+      ],
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "0F6HDtCgDo6SqF9f",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "a226eebd-a563-4713-bc80-6ca28c963ca3",
+              "leftValue": "={{ $json['Email Status'] }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "notExists",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.filter",
+      "typeVersion": 2.3,
+      "position": [
+        304,
+        -816
+      ],
+      "id": "0b0eac29-3563-4231-a4ae-66ad27479df6",
+      "name": "Filter1"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        656,
+        -896
+      ],
+      "id": "c3ea71a8-1cf0-41f4-9905-b9675de32a18",
+      "name": "Loop Over Items1"
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "documentId": {
+          "__rl": true,
+          "value": "1OeQReV8XnfcqYxoAhyxXWkCzJGTRVIfLChJsBwAnOYs",
+          "mode": "list",
+          "cachedResultName": "Recruiters",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1OeQReV8XnfcqYxoAhyxXWkCzJGTRVIfLChJsBwAnOYs/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1OeQReV8XnfcqYxoAhyxXWkCzJGTRVIfLChJsBwAnOYs/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Email Status": "={{ $json.data }}",
+            "Name": "={{ $('Google Sheets1').item.json.Name }}"
+          },
+          "matchingColumns": [
+            "Name"
+          ],
+          "schema": [
+            {
+              "id": "Name",
+              "displayName": "Name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Email",
+              "displayName": "Email",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Title",
+              "displayName": "Title",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Company",
+              "displayName": "Company",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Email Status",
+              "displayName": "Email Status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "row_number",
+              "displayName": "row_number",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "readOnly": true,
+              "removed": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        1408,
+        -880
+      ],
+      "id": "022f2884-96d3-4ece-a3d3-c643c47b642f",
+      "name": "Update row in sheet1",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "0F6HDtCgDo6SqF9f",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "url": "https://apps.emaillistverify.com/api/verifyEmail",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "email",
+              "value": "={{ $json.Email }}"
+            },
+            {
+              "name": "secret",
+              "value": "2ujkTiXdbNISVBTuzNhjiEH003tdD8ZM"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"key\": \"sHQKMZx53EZ9ljphNiitkpD7K9kT6Gzt\",\n  \"email\": \"{{ $json.Email }}\"\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        1008,
+        -880
+      ],
+      "id": "eae0bd9f-9078-4343-a3d2-0feb5f38bfe7",
+      "name": "HTTP Request"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.form",
+      "typeVersion": 2.5,
+      "position": [
+        -288,
+        -816
+      ],
+      "id": "4fae6dae-2f44-41c3-a43c-97c0b05ee94a",
+      "name": "Form",
+      "webhookId": "082f1187-6b14-4470-a2af-6a24059e2409"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "On form submission": {
+      "main": [
+        [
+          {
+            "node": "Get row(s) in sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Sheets": {
+      "main": [
+        [
+          {
+            "node": "Filter",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "SplitInBatches": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait": {
+      "main": [
+        [
+          {
+            "node": "Send a message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send a message": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Ollama Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Simple Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request1": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "When clicking ‘Execute workflow’": {
+      "main": [
+        [
+          {
+            "node": "Google Sheets",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript": {
+      "main": [
+        [
+          {
+            "node": "Update row in sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update row in sheet": {
+      "main": [
+        [
+          {
+            "node": "SplitInBatches",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get row(s) in sheet": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Loop Over Items": {
+      "main": [
+        [],
+        [
+          {
+            "node": "Message a model",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Message a model": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript1": {
+      "main": [
+        [
+          {
+            "node": "Wait",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Filter": {
+      "main": [
+        [
+          {
+            "node": "SplitInBatches",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Sheets1": {
+      "main": [
+        [
+          {
+            "node": "Filter1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Filter1": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Loop Over Items1": {
+      "main": [
+        [],
+        [
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update row in sheet1": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request": {
+      "main": [
+        [
+          {
+            "node": "Update row in sheet1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Form": {
+      "main": [
+        [
+          {
+            "node": "Google Sheets1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "fc33388f-5ea3-46b2-b089-4e9abedbae0f",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "c295b37e6b23f256eaa0cd59ec531a7786a9c09e3b91e33b8fb94ca4f09dd723"
+  },
+  "id": "ClEFfPqPd7adFZdX",
+  "tags": []
+}
